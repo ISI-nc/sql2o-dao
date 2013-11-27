@@ -72,6 +72,17 @@
 						</systemPropertyVariables>
 					</configuration>
 				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<configuration>
+						<archive>
+							<manifestEntries>
+								<Tapestry-Module-Classes>nc.isi.slq2o_dao.services.Slq2oDaoModule</Tapestry-Module-Classes>
+							</manifestEntries>
+						</archive>
+					</configuration>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>

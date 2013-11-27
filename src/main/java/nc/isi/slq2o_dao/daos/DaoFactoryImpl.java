@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nc.isi.fragaria_reflection.services.ObjectMetadataProvider;
-import nc.isi.slq2o_dao.entities.BaseEntity;
+import nc.isi.slq2o_dao.entities.Entity;
 import nc.isi.slq2o_dao.services.Sql2oDbProvider;
 import nc.isi.slq2o_dao.services.SqlDSLProvider;
 
@@ -28,7 +28,7 @@ public class DaoFactoryImpl implements DaoFactory {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends BaseEntity> Dao<T> get(Class<T> tClass) {
+	public <T extends Entity> Dao<T> get(Class<T> tClass) {
 		Dao<T> dao = (Dao<T>) daos.get(tClass);
 		if (dao == null) {
 			dao = new DefaultDao<>(sql2oDbProvider, sqlDSLProvider,

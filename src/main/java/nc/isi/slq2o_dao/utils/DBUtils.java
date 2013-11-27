@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import nc.isi.fragaria_reflection.utils.ObjectMetadata;
-import nc.isi.slq2o_dao.entities.BaseEntity;
+import nc.isi.slq2o_dao.entities.Entity;
 import nc.isi.slq2o_dao.entities.Selectable;
 
 import com.google.common.collect.Lists;
@@ -19,11 +19,11 @@ public class DBUtils {
 
 	private static final List<String> excludedProperties = Arrays.asList(
 			"class", "objectMetadata", "field");
-	private static final Map<Class<? extends BaseEntity>, String> classTableNames = new HashMap<>();
-	private static final Map<Class<? extends BaseEntity>, Collection<String>> classPropertyNames = new HashMap<>();
+	private static final Map<Class<? extends Entity>, String> classTableNames = new HashMap<>();
+	private static final Map<Class<? extends Entity>, Collection<String>> classPropertyNames = new HashMap<>();
 
 	public static Collection<String> getInsertablePropertyNames(
-			Class<? extends BaseEntity> tClass, ObjectMetadata objectMetadata) {
+			Class<? extends Entity> tClass, ObjectMetadata objectMetadata) {
 		Collection<String> results = classPropertyNames.get(tClass);
 		if (results == null) {
 			results = Lists.newArrayList();
@@ -47,7 +47,7 @@ public class DBUtils {
 		return col.toString().replaceAll("\\[", "").replaceAll("\\]", "");
 	}
 
-	public static String convertClassToTableName(Class<? extends BaseEntity> cl) {
+	public static String convertClassToTableName(Class<? extends Entity> cl) {
 		String tName = classTableNames.get(cl);
 		if (tName == null) {
 			tName = splitCamelCase(cl.getSimpleName(), "_").toUpperCase();

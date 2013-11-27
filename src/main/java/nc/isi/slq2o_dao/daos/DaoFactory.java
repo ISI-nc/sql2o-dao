@@ -1,9 +1,9 @@
 package nc.isi.slq2o_dao.daos;
 
-import nc.isi.slq2o_dao.entities.BaseEntity;
+import nc.isi.slq2o_dao.entities.Entity;
 
 public interface DaoFactory {
 
-	<T extends BaseEntity> Dao<T> get(Class<T> tClass);
+	<T extends Entity> Dao<T> get(Class<T> tClass);
 
 }

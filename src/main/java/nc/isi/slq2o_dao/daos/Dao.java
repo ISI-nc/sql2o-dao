@@ -2,9 +2,9 @@ package nc.isi.slq2o_dao.daos;
 
 import java.util.Collection;
 
-import nc.isi.slq2o_dao.entities.BaseEntity;
+import nc.isi.slq2o_dao.entities.Entity;
 
-public interface Dao<T extends BaseEntity> {
+public interface Dao<T extends Entity> {
 
 	/**
 	 * @return {@link Collection} contenant tous les éléments de type T

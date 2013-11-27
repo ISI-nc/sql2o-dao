@@ -13,7 +13,7 @@ import org.apache.tapestry5.ioc.ServiceBinder;
  * @author jmaltat
  * 
  */
-public class ModelModule {
+public class Slq2oDaoModule {
 
 	public static void bind(ServiceBinder binder) {
 		binder.bind(Sql2oDbProvider.class, Sql2oDbProviderImpl.class);

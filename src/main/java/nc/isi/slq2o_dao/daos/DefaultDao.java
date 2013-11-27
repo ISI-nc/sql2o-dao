@@ -13,7 +13,7 @@ import java.util.Map;
 
 import nc.isi.fragaria_reflection.services.ObjectMetadataProvider;
 import nc.isi.fragaria_reflection.utils.ObjectMetadata;
-import nc.isi.slq2o_dao.entities.BaseEntity;
+import nc.isi.slq2o_dao.entities.Entity;
 import nc.isi.slq2o_dao.services.Sql2oDbProvider;
 import nc.isi.slq2o_dao.services.SqlDSLProvider;
 import nc.isi.slq2o_dao.utils.DBUtils;
@@ -34,7 +34,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-public class DefaultDao<T extends BaseEntity> implements Dao<T> {
+public class DefaultDao<T extends Entity> implements Dao<T> {
 
 	public class Parameters {
 		private Parameters() {
@@ -107,7 +107,7 @@ public class DefaultDao<T extends BaseEntity> implements Dao<T> {
 			if (value == null) {
 				continue;
 			}
-			fields.add(entity.getField(property));
+			fields.add(entity.getEntityDef().getField(property));
 			params.add(param(property, String.class));
 		}
 		Query query = sql2o.createQuery(sqlDsl.insertInto(table, fields)
@@ -145,10 +145,10 @@ public class DefaultDao<T extends BaseEntity> implements Dao<T> {
 			Object oldValue = objectMetadata.read(oldEntity, s);
 			if (!Objects.equal(value, oldValue)) {
 				if (updateSet == null) {
-					updateSet = update.set(entity.getField(s),
+					updateSet = update.set(entity.getEntityDef().getField(s),
 							param(s.toUpperCase(), String.class));
 				} else {
-					updateSet.set(entity.getField(s),
+					updateSet.set(entity.getEntityDef().getField(s),
 							param(s.toUpperCase(), String.class));
 				}
 				parameters.put(s.toUpperCase(), value);
