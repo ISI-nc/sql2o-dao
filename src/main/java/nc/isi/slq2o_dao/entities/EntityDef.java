@@ -12,4 +12,6 @@ public interface EntityDef<E extends Entity> {
 
 	Class<E> getEntityClass();
 
+	Field<Object> getIdField();
+
 }

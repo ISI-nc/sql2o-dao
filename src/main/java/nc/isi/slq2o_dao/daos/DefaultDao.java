@@ -1,9 +1,7 @@
 package nc.isi.slq2o_dao.daos;
 
-import static org.jooq.impl.DSL.fieldByName;
 import static org.jooq.impl.DSL.param;
 import static org.jooq.impl.DSL.selectFrom;
-import static org.jooq.impl.DSL.tableByName;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLDataException;
@@ -14,6 +12,8 @@ import java.util.Map;
 import nc.isi.fragaria_reflection.services.ObjectMetadataProvider;
 import nc.isi.fragaria_reflection.utils.ObjectMetadata;
 import nc.isi.slq2o_dao.entities.Entity;
+import nc.isi.slq2o_dao.entities.EntityDef;
+import nc.isi.slq2o_dao.services.EntityDefProvider;
 import nc.isi.slq2o_dao.services.Sql2oDbProvider;
 import nc.isi.slq2o_dao.services.SqlDSLProvider;
 import nc.isi.slq2o_dao.utils.DBUtils;
@@ -22,7 +22,6 @@ import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Param;
 import org.jooq.Record;
-import org.jooq.Table;
 import org.jooq.UpdateSetFirstStep;
 import org.jooq.UpdateSetMoreStep;
 import org.jooq.conf.ParamType;
@@ -44,44 +43,40 @@ public class DefaultDao<T extends Entity> implements Dao<T> {
 		public static final String ID = "id";
 	}
 
+	protected final DBUtils dbUtils;
 	protected final Sql2o sql2o;
 	protected final Logger logger;
 	protected final Class<T> tClass;
-	protected final String tName;
-	protected final Table<Record> table;
+	protected final EntityDef<T> entityDef;
 	protected final DSLContext sqlDsl;
 	protected final ObjectMetadata objectMetadata;
-	protected final Collection<String> insertablePropertyNames;
-	protected final Field<Object> ID_FIELD;
 
-	public DefaultDao(Sql2oDbProvider sql2oDbProvider,
-			SqlDSLProvider sqlDSLProvider,
+	public DefaultDao(DBUtils dbUtils, Sql2oDbProvider sql2oDbProvider,
+			SqlDSLProvider sqlDSLProvider, EntityDefProvider entityDefProvider,
 			ObjectMetadataProvider objectMetadataProvider, Logger logger,
 			Class<T> tClass) {
+		this.entityDef = entityDefProvider.provide(tClass);
+		this.dbUtils = dbUtils;
 		this.sql2o = sql2oDbProvider.provide();
 		this.sqlDsl = sqlDSLProvider.provide();
 
 		this.logger = logger;
 		this.tClass = tClass;
 		this.objectMetadata = objectMetadataProvider.provide(tClass);
-		this.insertablePropertyNames = DBUtils.getInsertablePropertyNames(
-				tClass, objectMetadata);
-		this.tName = DBUtils.convertClassToTableName(tClass);
-		this.table = tableByName(tName);
-		this.ID_FIELD = fieldByName(tName, "ID");
 	}
 
 	@Override
 	public Collection<T> getAll() {
-		return sql2o.createQuery(selectFrom(table).getSQL()).executeAndFetch(
-				tClass);
+		return sql2o.createQuery(selectFrom(entityDef.getTable()).getSQL())
+				.executeAndFetch(tClass);
 	}
 
 	@Override
 	public T get(String id) {
 		return getUnique(sql2o.createQuery(
-				sqlDsl.renderNamedParams(selectFrom(table).where(
-						ID_FIELD.eq(param(Parameters.ID, String.class)))))
+				sqlDsl.renderNamedParams(selectFrom(entityDef.getTable())
+						.where(entityDef.getIdField().eq(
+								param(Parameters.ID, String.class)))))
 				.addParameter(Parameters.ID, id));
 	}
 
@@ -102,16 +97,18 @@ public class DefaultDao<T extends Entity> implements Dao<T> {
 	public void insert(T entity) {
 		List<Field<?>> fields = Lists.newArrayList();
 		List<Param<?>> params = Lists.newArrayList();
-		for (String property : insertablePropertyNames) {
+		for (String property : dbUtils.getInsertablePropertyNames(tClass,
+				objectMetadata)) {
 			Object value = objectMetadata.read(entity, property);
 			if (value == null) {
 				continue;
 			}
-			fields.add(entity.getEntityDef().getField(property));
+			fields.add(entityDef.getField(property));
 			params.add(param(property, String.class));
 		}
-		Query query = sql2o.createQuery(sqlDsl.insertInto(table, fields)
-				.values(params).getSQL(ParamType.NAMED), false);
+		Query query = sql2o.createQuery(
+				sqlDsl.insertInto(entityDef.getTable(), fields).values(params)
+						.getSQL(ParamType.NAMED), false);
 		for (Param<?> param : params) {
 			try {
 				query.addParameter(param.getName(), objectMetadata
@@ -137,24 +134,26 @@ public class DefaultDao<T extends Entity> implements Dao<T> {
 							+ entity.getId());
 		}
 
-		UpdateSetFirstStep<Record> update = sqlDsl.update(table);
+		UpdateSetFirstStep<Record> update = sqlDsl.update(entityDef.getTable());
 		Map<String, Object> parameters = Maps.newHashMap();
 		UpdateSetMoreStep<Record> updateSet = null;
-		for (String s : insertablePropertyNames) {
+		for (String s : dbUtils.getInsertablePropertyNames(tClass,
+				objectMetadata)) {
 			Object value = objectMetadata.read(entity, s);
 			Object oldValue = objectMetadata.read(oldEntity, s);
 			if (!Objects.equal(value, oldValue)) {
 				if (updateSet == null) {
-					updateSet = update.set(entity.getEntityDef().getField(s),
+					updateSet = update.set(entityDef.getField(s),
 							param(s.toUpperCase(), String.class));
 				} else {
-					updateSet.set(entity.getEntityDef().getField(s),
+					updateSet.set(entityDef.getField(s),
 							param(s.toUpperCase(), String.class));
 				}
 				parameters.put(s.toUpperCase(), value);
 			}
 		}
-		updateSet.where(ID_FIELD.eq(param(Parameters.ID, String.class)));
+		updateSet.where(entityDef.getIdField().eq(
+				param(Parameters.ID, String.class)));
 		Query query = sql2o.createQuery(updateSet.getSQL(ParamType.NAMED),
 				false);
 		for (String parameter : parameters.keySet()) {

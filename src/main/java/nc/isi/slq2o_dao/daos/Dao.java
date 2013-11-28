@@ -25,4 +25,11 @@ public interface Dao<T extends Entity> {
 	 */
 	void insert(T object);
 
+	/**
+	 * 
+	 * @param object
+	 *            l'élément à mettre à jour dans la base
+	 */
+	void update(T object);
+
 }

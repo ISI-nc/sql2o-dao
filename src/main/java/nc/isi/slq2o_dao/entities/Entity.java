@@ -6,6 +6,4 @@ public interface Entity {
 
 	void setId(String id);
 
-	EntityDef getEntityDef();
-
 }
