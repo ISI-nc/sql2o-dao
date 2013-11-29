@@ -32,4 +32,6 @@ public interface Dao<T extends Entity> {
 	 */
 	void update(T object);
 
+	void delete(T object);
+
 }

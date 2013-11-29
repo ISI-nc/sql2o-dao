@@ -155,4 +155,14 @@ public class DefaultDao<T extends Entity> implements Dao<T> {
 	protected boolean exist(T entity) {
 		return get(entity.getId()) != null;
 	}
+
+	@Override
+	public void delete(T object) {
+		String query = sqlDsl
+				.delete(entityDef.getTable())
+				.where(entityDef.getIdField().eq(
+						param(Parameters.ID, String.class))).getSQL();
+		sql2o.createQuery(query).addParameter(Parameters.ID, object.getId())
+				.executeUpdate();
+	}
 }
