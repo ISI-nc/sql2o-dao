@@ -9,14 +9,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import nc.isi.fragaria_reflection.services.ObjectMetadataProvider;
-import nc.isi.fragaria_reflection.utils.ObjectMetadata;
+import nc.isi.slq2o_dao.db.DatabaseDef;
 import nc.isi.slq2o_dao.entities.Entity;
 import nc.isi.slq2o_dao.entities.EntityDef;
-import nc.isi.slq2o_dao.services.EntityDefProvider;
-import nc.isi.slq2o_dao.services.Sql2oDbProvider;
-import nc.isi.slq2o_dao.services.SqlDSLProvider;
-import nc.isi.slq2o_dao.utils.DBUtils;
+import nc.isi.slq2o_dao.entities.EntityDefProvider;
 
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -43,26 +39,22 @@ public class DefaultDao<T extends Entity> implements Dao<T> {
 		public static final String ID = "id";
 	}
 
-	protected final DBUtils dbUtils;
 	protected final Sql2o sql2o;
 	protected final Logger logger;
 	protected final Class<T> tClass;
 	protected final EntityDef<T> entityDef;
 	protected final DSLContext sqlDsl;
-	protected final ObjectMetadata objectMetadata;
+	protected final DatabaseDef databaseDef;
 
-	public DefaultDao(DBUtils dbUtils, Sql2oDbProvider sql2oDbProvider,
-			SqlDSLProvider sqlDSLProvider, EntityDefProvider entityDefProvider,
-			ObjectMetadataProvider objectMetadataProvider, Logger logger,
+	public DefaultDao(EntityDefProvider entityDefProvider, Logger logger,
 			Class<T> tClass) {
 		this.entityDef = entityDefProvider.provide(tClass);
-		this.dbUtils = dbUtils;
-		this.sql2o = sql2oDbProvider.provide();
-		this.sqlDsl = sqlDSLProvider.provide();
+		this.databaseDef = entityDef.getDatabaseDef();
+		this.sql2o = databaseDef.getSql2o();
+		this.sqlDsl = databaseDef.getSqlDSL();
 
 		this.logger = logger;
 		this.tClass = tClass;
-		this.objectMetadata = objectMetadataProvider.provide(tClass);
 	}
 
 	@Override
@@ -97,9 +89,8 @@ public class DefaultDao<T extends Entity> implements Dao<T> {
 	public void insert(T entity) {
 		List<Field<?>> fields = Lists.newArrayList();
 		List<Param<?>> params = Lists.newArrayList();
-		for (String property : dbUtils.getInsertablePropertyNames(tClass,
-				objectMetadata)) {
-			Object value = objectMetadata.read(entity, property);
+		for (String property : entityDef.getFieldNames()) {
+			Object value = entityDef.read(entity, property);
 			if (value == null) {
 				continue;
 			}
@@ -111,7 +102,7 @@ public class DefaultDao<T extends Entity> implements Dao<T> {
 						.getSQL(ParamType.NAMED), false);
 		for (Param<?> param : params) {
 			try {
-				query.addParameter(param.getName(), objectMetadata
+				query.addParameter(param.getName(), entityDef
 						.getPropertyDescriptor(param.getName()).getReadMethod()
 						.invoke(entity));
 			} catch (IllegalAccessException e) {
@@ -137,10 +128,9 @@ public class DefaultDao<T extends Entity> implements Dao<T> {
 		UpdateSetFirstStep<Record> update = sqlDsl.update(entityDef.getTable());
 		Map<String, Object> parameters = Maps.newHashMap();
 		UpdateSetMoreStep<Record> updateSet = null;
-		for (String s : dbUtils.getInsertablePropertyNames(tClass,
-				objectMetadata)) {
-			Object value = objectMetadata.read(entity, s);
-			Object oldValue = objectMetadata.read(oldEntity, s);
+		for (String s : entityDef.getFieldNames()) {
+			Object value = entityDef.read(entity, s);
+			Object oldValue = entityDef.read(oldEntity, s);
 			if (!Objects.equal(value, oldValue)) {
 				if (updateSet == null) {
 					updateSet = update.set(entityDef.getField(s),

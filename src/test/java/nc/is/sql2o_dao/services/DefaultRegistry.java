@@ -1,4 +1,4 @@
-package nc.is.sql2o_dao.utils;
+package nc.is.sql2o_dao.services;
 
 
 import org.apache.tapestry5.ioc.IOCUtilities;

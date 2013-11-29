@@ -1,5 +1,6 @@
 package nc.isi.slq2o_dao.services;
 
+import javax.sql.DataSource;
 
 import org.sql2o.Sql2o;
 
@@ -12,8 +13,11 @@ import org.sql2o.Sql2o;
 public interface Sql2oDbProvider {
 
 	/**
-	 * @return une instance valide de {@link Sql2o}
+	 * @param dataSource
+	 *            : une dataSource valide
+	 * @return une instance valide de {@link Sql2o} pour la {@link DataSource}
+	 *         spécifiée
 	 */
-	Sql2o provide();
+	Sql2o provide(DataSource dataSource);
 
 }
