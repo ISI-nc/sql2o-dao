@@ -40,7 +40,7 @@ public class DatabaseDefProviderImpl implements DatabaseDefProvider {
 			String key = entityToDataSource.provide(entityClass);
 			DataSource dataSource = dataSourceBuilder.buildJNDI(key);
 			databaseDef = new DefaultDataBaseDef(
-					entityToTableConverterProvider.provide(dataSource),
+					entityToTableConverterProvider.provide(key),
 					sql2oDbProvider.provide(dataSource),
 					sqlDSLProvider.provide(key), key);
 			entityClassToDatabaseDef.put(entityClass, databaseDef);

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configure id="Server" class="org.eclipse.jetty.server.Server">
+	<New id="jdbc/smti" class="org.eclipse.jetty.plus.jndi.Resource">
+		<Arg></Arg>
+		<Arg>jdbc/smti</Arg>
+		<Arg>
+			<New class="org.apache.commons.dbcp.BasicDataSource">
+				<Set name="driverClassName">org.postgis.DriverWrapper</Set>
+				<Set name="url">jdbc:postgresql_postGIS://dev-smti-db.dyn.isi.nc/smti-sandbox</Set>
+				<Set name="username">postgres</Set>
+				<Set name="password">isipowa</Set>
+				<Set name="validationQuery">SELECT 1</Set>
+			</New>
+		</Arg>
+	</New>
+</Configure>

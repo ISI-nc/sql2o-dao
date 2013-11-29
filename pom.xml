@@ -78,7 +78,7 @@
 					<configuration>
 						<archive>
 							<manifestEntries>
-								<Tapestry-Module-Classes>nc.isi.slq2o_dao.services.Slq2oDaoModule</Tapestry-Module-Classes>
+								<Tapestry-Module-Classes>nc.isi.slq2o_dao.services.Sql2oDaoModule</Tapestry-Module-Classes>
 							</manifestEntries>
 						</archive>
 					</configuration>

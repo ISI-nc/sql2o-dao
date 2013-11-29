@@ -2,20 +2,18 @@ package nc.isi.slq2o_dao.db;
 
 import java.util.Map;
 
-import javax.sql.DataSource;
-
 public class EntityToTableConverterProviderImpl implements
 		EntityToTableConverterProvider {
-	private final Map<DataSource, EntityToTableConverter> dataSourceToEntityToTableConverter;
+	private final Map<String, EntityToTableConverter> keyToEntityToTableConverter;
 
 	public EntityToTableConverterProviderImpl(
-			Map<DataSource, EntityToTableConverter> dataSourceToEntityToTableConverter) {
-		this.dataSourceToEntityToTableConverter = dataSourceToEntityToTableConverter;
+			Map<String, EntityToTableConverter> keyToEntityToTableConverter) {
+		this.keyToEntityToTableConverter = keyToEntityToTableConverter;
 	}
 
 	@Override
-	public EntityToTableConverter provide(DataSource dataSource) {
-		return dataSourceToEntityToTableConverter.get(dataSource);
+	public EntityToTableConverter provide(String key) {
+		return keyToEntityToTableConverter.get(key);
 	}
 
 }
